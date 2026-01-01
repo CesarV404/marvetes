@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BarcodeScanner } from "react-barcode-detection";
+import BarcodeScanner from "react-qr-barcode-scanner";
 
 const bb = {
   stroke: "#fff",
@@ -53,16 +53,16 @@ export default function App() {
   return (
     <>
       <div className="UTCScreen">
-        <BarcodeScanner boundingBox={bb} accept="ean_13" onData={setData} />
+        <BarcodeScanner
+          width={500}
+          height={500}
+          onUpdate={(err, result) => {
+            if (result) setData(result.text);
+          }}
+        />
         <div className="data">{data}</div>
       </div>
       <div style={{ padding: 20, fontFamily: "Arial" }}>
-        <BarcodeScanner
-          options={{ formats: ["upc_a"], delay: 500 }}
-          onCapture={(barcodes) => {
-            alert(barcodes);
-          }}
-        />
         <h2>Registro</h2>
 
         {/* FORMULARIO */}
