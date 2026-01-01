@@ -95,7 +95,7 @@ const Ticket = ({
     {/* Header */}
     <View style={styles.header}>
       <Image
-        source="/public/grupo-vizion-logo.jpeg"
+        source="/grupo-vizion-logo.jpeg"
         style={{
           width: 25,
           height: 25,
