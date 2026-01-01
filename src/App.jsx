@@ -56,7 +56,6 @@ export default function App() {
         <BarcodeScanner
           width={500}
           height={200}
-          videoConstraints={{ aspectRatio: 1 }}
           formats={["UPC_A", "EAN_13"]}
           onUpdate={(err, result) => {
             if (result) setData(result.text);
