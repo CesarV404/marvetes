@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import BarcodeScanner from "react-qr-barcode-scanner";
 
 const bb = {
@@ -20,6 +20,36 @@ export default function App() {
   });
 
   const [lista, setLista] = useState([]);
+  const videoRef = useRef(null);
+  const [isZoomed, setIsZomed] = useState(false);
+
+  useEffect(() => {
+    if (videoRef === null) return;
+    if (isZoomed) return;
+
+    const video = videoRef.current;
+    if (!video || !video.srcObject) return;
+
+    const track = video.srcObject.getVideoTracks()[0];
+    if (!track) return;
+
+    const capabilities = track.getCapabilities?.();
+    if (!capabilities?.zoom) {
+      console.warn("Zoom no soportado en este dispositivo");
+      setIsZomed(true);
+      return;
+    }
+
+    track
+      .applyConstraints({
+        advanced: [{ zoom: 1 }],
+      })
+      .then(() => {
+        console.log("Zoom aplicado x1");
+        setIsZomed(true);
+      })
+      .catch(console.error);
+  }, [videoRef]);
 
   const handleChange = (e) => {
     setForm({
