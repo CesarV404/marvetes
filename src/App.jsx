@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 
 export default function App() {
   const [form, setForm] = useState({
@@ -10,30 +10,6 @@ export default function App() {
   });
 
   const [lista, setLista] = useState([]);
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const [photo, setPhoto] = useState(null);
-
-  const startCamera = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment" }, // cámara trasera
-    });
-    videoRef.current.srcObject = stream;
-    videoRef.current.play();
-  };
-
-  const takePhoto = () => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0);
-
-    setPhoto(canvas.toDataURL("image/png"));
-  };
 
   const handleChange = (e) => {
     setForm({
@@ -64,18 +40,23 @@ export default function App() {
     setLista([]);
   };
 
+  function TakePhoto() {
+  const handlePhoto = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    console.log(file); // ← aquí recibes la foto
+  };
+
   return (
     <>
       <div>
-        <button onClick={startCamera}>Abrir cámara</button>
-
-        <video ref={videoRef} style={{ width: "100%" }} />
-
-        <button onClick={takePhoto}>Tomar foto</button>
-
-        <canvas ref={canvasRef} style={{ display: "none" }} />
-
-        {photo && <img src={photo} alt="captura" style={{ width: "100%" }} />}
+        <input
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={handlePhoto}
+        />
       </div>
       <div style={{ padding: 20, fontFamily: "Arial" }}>
         <h2>Registro</h2>
