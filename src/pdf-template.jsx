@@ -95,10 +95,10 @@ const Ticket = ({
     {/* Header */}
     <View style={styles.header}>
       <Image
-        source="/grupo-vizion-logo.jpeg"
+        source="/grupo-vizion-logo.png"
         style={{
-          width: 25,
-          height: 25,
+          width: 45,
+          height: 30,
         }}
       />
       <Text style={styles.fecha}>
