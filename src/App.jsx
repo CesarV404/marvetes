@@ -54,9 +54,7 @@ export default function App() {
     <>
       <div className="UTCScreen" style={{ display: "flex" }}>
         <BarcodeScanner
-          width={500}
-          height={200}
-          formats={["UPC_A", "EAN_13"]}
+          formats={["UPC_A"]}
           onUpdate={(err, result) => {
             if (result) setData(result.text);
           }}
