@@ -27,7 +27,10 @@ const barcodeDetector = new BarcodeDetector({
 });
 
 export default function App() {
-  const { productList, addProduct, removeProduct, deleteList } = useTagStore(
+  const productList = useTagStore(
+    (state) => state.productList
+  );
+  const { addProduct, removeProduct, deleteList } = useTagStore(
     (state) => state
   );
 
