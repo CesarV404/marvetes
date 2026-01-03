@@ -60,7 +60,7 @@ export default function App() {
       descripcion: "",
       codigo: "",
       hechoPor: madeBy,
-      superviso: madeBy,
+      superviso: supervisedBy,
       piezas: "",
       barcodeImg: null,
     });
