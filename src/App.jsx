@@ -2,6 +2,7 @@ import { useState } from "react";
 import { MyDocument } from "./pdf-template";
 import { pdf } from "@react-pdf/renderer";
 
+import { useTagStore } from "./store";
 import JsBarcode from "jsbarcode";
 
 import {
@@ -26,16 +27,22 @@ const barcodeDetector = new BarcodeDetector({
 });
 
 export default function App() {
+  const { productList, addProduct, removeProduct, deleteList } = useTagStore(
+    (state) => state
+  );
+
+  const { madeBy, setMadeBy, supervisedBy, setSupervisedBy } = useTagStore(
+    (state) => state
+  );
+
   const [form, setForm] = useState({
     descripcion: "",
     codigo: "",
-    hechoPor: "",
-    superviso: "",
+    hechoPor: madeBy,
+    superviso: supervisedBy,
     piezas: "",
     barcodeImg: null,
   });
-
-  const [lista, setLista] = useState([]);
 
   const handleChange = (e) => {
     setForm({
@@ -47,24 +54,16 @@ export default function App() {
   const agregarItem = () => {
     if (!form.descripcion || !form.codigo) return;
 
-    setLista([...lista, { ...form, id: Date.now() }]);
+    addProduct({ ...form, id: Date.now() });
 
     setForm({
       descripcion: "",
       codigo: "",
-      hechoPor: form.hechoPor,
-      superviso: form.superviso,
+      hechoPor: madeBy,
+      superviso: madeBy,
       piezas: "",
       barcodeImg: null,
     });
-  };
-
-  const eliminarItem = (id) => {
-    setLista(lista.filter((item) => item.id !== id));
-  };
-
-  const limpiarLista = () => {
-    setLista([]);
   };
 
   function generarBarcodeBlob(valor) {
@@ -84,9 +83,17 @@ export default function App() {
     });
   }
 
+  async function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
   const handlePhoto = (e) => {
     const file = e.target.files[0];
-    console.log(file);
     if (!file) return;
 
     barcodeDetector.detect(file).then(async (barcodes) => {
@@ -112,15 +119,13 @@ export default function App() {
         realFormat
       );
 
-      const urlBarcode = URL.createObjectURL(barcodeImgBlob);
-
-      console.log(barcodeImgBlob);
-      console.log(urlBarcode);
+      const base64Barcode = await blobToBase64(barcodeImgBlob);
+      console.log(base64Barcode);
 
       setForm({
         ...form,
         codigo: barcodeCleaned,
-        barcodeImg: urlBarcode,
+        barcodeImg: base64Barcode,
       });
     });
   };
@@ -173,16 +178,22 @@ export default function App() {
         <input
           name="hechoPor"
           placeholder="Hecho por"
-          value={form.hechoPor}
-          onChange={handleChange}
+          value={madeBy}
+          onChange={(e) => {
+            handleChange(e);
+            setMadeBy(e.target.value);
+          }}
         />
         <br />
 
         <input
           name="superviso"
           placeholder="Supervisó"
-          value={form.superviso}
-          onChange={handleChange}
+          value={supervisedBy}
+          onChange={(e) => {
+            handleChange(e);
+            setSupervisedBy(e.target.value);
+          }}
         />
         <br />
 
@@ -200,11 +211,11 @@ export default function App() {
       </div>
 
       {/* LISTA */}
-      <h3>Lista - Marbetes: {lista.length}</h3>
+      <h3>Lista - Marbetes: {productList.length}</h3>
 
-      {lista.length === 0 && <p>No hay registros</p>}
+      {productList.length === 0 && <p>No hay registros</p>}
 
-      {lista.map((item) => (
+      {productList.map((item) => (
         <div
           key={item.id}
           style={{ border: "1px solid #ccc", padding: 10, marginBottom: 10 }}
@@ -225,15 +236,17 @@ export default function App() {
             <b>Piezas:</b> {item.piezas}
           </p>
 
-          <button onClick={() => eliminarItem(item.id)}>Eliminar</button>
+          <button onClick={() => removeProduct(item.id)}>Eliminar</button>
         </div>
       ))}
 
       {/* ACCIONES */}
-      {lista.length > 0 && (
+      {productList.length > 0 && (
         <>
-          <button onClick={limpiarLista}>Borrar lista</button>{" "}
-          <button onClick={async () => generarPDF(lista)}>Imprimir</button>
+          <button onClick={deleteList}>Borrar lista</button>{" "}
+          <button onClick={async () => generarPDF(productList)}>
+            Imprimir
+          </button>
         </>
       )}
     </div>
