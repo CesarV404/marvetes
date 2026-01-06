@@ -14,7 +14,6 @@ const styles = StyleSheet.create({
     height: 148.75,
     border: "1pt solid #000",
     padding: 8,
-    margin: "0 6",
     fontSize: 9,
   },
 

@@ -27,9 +27,7 @@ const barcodeDetector = new BarcodeDetector({
 });
 
 export default function App() {
-  const productList = useTagStore(
-    (state) => state.productList
-  );
+  const productList = useTagStore((state) => state.productList);
   const { addProduct, removeProduct, deleteList } = useTagStore(
     (state) => state
   );
@@ -215,6 +213,14 @@ export default function App() {
 
       {/* LISTA */}
       <h3>Lista - Marbetes: {productList.length}</h3>
+      {productList.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <button onClick={deleteList}>Borrar lista</button>{" "}
+          <button onClick={async () => generarPDF(productList)}>
+            Imprimir
+          </button>
+        </div>
+      )}
 
       {productList.length === 0 && <p>No hay registros</p>}
 
@@ -244,14 +250,6 @@ export default function App() {
       ))}
 
       {/* ACCIONES */}
-      {productList.length > 0 && (
-        <>
-          <button onClick={deleteList}>Borrar lista</button>{" "}
-          <button onClick={async () => generarPDF(productList)}>
-            Imprimir
-          </button>
-        </>
-      )}
     </div>
   );
 }
