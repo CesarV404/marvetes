@@ -11,6 +11,9 @@ import {
   prepareZXingModule,
 } from "barcode-detector/ponyfill";
 
+import { FieldInput } from "./components/atoms/FieldInput";
+import { Button } from "@fluentui/react-components";
+
 prepareZXingModule({
   overrides: {
     locateFile: (path, prefix) => {
@@ -68,7 +71,7 @@ export default function App() {
   };
 
   function generarBarcodeBlob(valor) {
-    return new Promise((resolve, format) => {
+    return new Promise((resolve) => {
       const canvas = document.createElement("canvas");
 
       JsBarcode(canvas, valor, {
@@ -149,34 +152,42 @@ export default function App() {
       <h2>Registro</h2>
 
       {/* FORMULARIO */}
-      <div style={{ marginBottom: 20 }}>
-        <input
+      <div
+        style={{
+          marginBottom: 20,
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+        }}
+      >
+        <FieldInput
+          fieldLabel="Descripción"
           name="descripcion"
           placeholder="Descripción"
           value={form.descripcion}
           onChange={handleChange}
         />
-        <br />
 
-        <input
-          name="codigo"
-          type="number"
-          placeholder="Código numérico"
-          value={form.codigo}
-          onChange={handleChange}
-        />
+        <div>
+          <FieldInput
+            fieldLabel="Código numérico"
+            name="codigo"
+            type="number"
+            placeholder="Código numérico"
+            value={form.codigo}
+            onChange={handleChange}
+          />
 
-        <br />
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handlePhoto}
+          />
+        </div>
 
-        <input
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={handlePhoto}
-        />
-        <br />
-
-        <input
+        <FieldInput
+          fieldLabel="Hecho por"
           name="hechoPor"
           placeholder="Hecho por"
           value={madeBy}
@@ -185,9 +196,9 @@ export default function App() {
             setMadeBy(e.target.value);
           }}
         />
-        <br />
 
-        <input
+        <FieldInput
+          fieldLabel="Supervisó"
           name="superviso"
           placeholder="Supervisó"
           value={supervisedBy}
@@ -196,19 +207,17 @@ export default function App() {
             setSupervisedBy(e.target.value);
           }}
         />
-        <br />
 
-        <input
+        <FieldInput
+          fieldLabel="Piezas"
           name="piezas"
           type="number"
           placeholder="Piezas"
           value={form.piezas}
           onChange={handleChange}
         />
-        <br />
-        <br />
 
-        <button onClick={agregarItem}>Agregar</button>
+        <Button onClick={agregarItem}>Agregar</Button>
       </div>
 
       {/* LISTA */}

@@ -1,9 +1,9 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 
 export const useTagStore = create()(
   persist(
-    (set, get) => ({
+    (set) => ({
       productList: [],
       madeBy: "",
       supervisedBy: "",
