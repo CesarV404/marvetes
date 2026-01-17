@@ -13,12 +13,14 @@
     "@fluentui/react-components": "^9.72.9",
     "@react-pdf/renderer": "^4.3.2",
     "@syncfusion/ej2-barcode-generator": "^32.1.19",
+    "@tailwindcss/vite": "^4.1.18",
     "barcode-detector": "^3.0.8",
     "jsbarcode": "^3.12.1",
     "react": "^19.2.0",
     "react-barcode-scanner": "^4.0.0",
     "react-dom": "^19.2.0",
     "react-qr-barcode-scanner": "^2.1.20",
+    "tailwindcss": "^4.1.18",
     "zustand": "^5.0.9"
   },
   "devDependencies": {

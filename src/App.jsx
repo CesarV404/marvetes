@@ -32,11 +32,11 @@ const barcodeDetector = new BarcodeDetector({
 export default function App() {
   const productList = useTagStore((state) => state.productList);
   const { addProduct, removeProduct, deleteList } = useTagStore(
-    (state) => state
+    (state) => state,
   );
 
   const { madeBy, setMadeBy, supervisedBy, setSupervisedBy } = useTagStore(
-    (state) => state
+    (state) => state,
   );
 
   const [form, setForm] = useState({
@@ -96,6 +96,24 @@ export default function App() {
     });
   }
 
+  async function generateBarcode(barcodeValue) {
+    const barcodeCleaned =
+      String(barcodeValue)[0] === "0"
+        ? String(barcodeValue).slice(1)
+        : String(barcodeValue);
+
+    const realFormat = barcodeCleaned.length === 12 ? "upc_a" : "ean_13";
+
+    const barcodeImgBlob = await generarBarcodeBlob(
+      String(barcodeCleaned),
+      realFormat,
+    );
+
+    const base64Barcode = await blobToBase64(barcodeImgBlob);
+
+    return { barcodeCleaned, base64Barcode };
+  }
+
   const handlePhoto = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -111,20 +129,8 @@ export default function App() {
       }
 
       const barcodeValue = barcodes[0].rawValue;
-      const barcodeCleaned =
-        String(barcodeValue)[0] === "0"
-          ? String(barcodeValue).slice(1)
-          : String(barcodeValue);
-
-      const realFormat = barcodeCleaned.length === 12 ? "upc_a" : "ean_13";
-
-      const barcodeImgBlob = await generarBarcodeBlob(
-        String(barcodeCleaned),
-        realFormat
-      );
-
-      const base64Barcode = await blobToBase64(barcodeImgBlob);
-      console.log(base64Barcode);
+      const { barcodeCleaned, base64Barcode } =
+        await generateBarcode(barcodeValue);
 
       setForm({
         ...form,
@@ -148,117 +154,133 @@ export default function App() {
   };
 
   return (
-    <div style={{ padding: 20, fontFamily: "Arial" }}>
-      <h2>Registro</h2>
+    <div className="sm:flex sm:justify-center">
+      <div className="sm:w-[40%]" style={{ padding: 20, fontFamily: "Arial" }}>
+        <h2>Registro</h2>
 
-      {/* FORMULARIO */}
-      <div
-        style={{
-          marginBottom: 20,
-          display: "flex",
-          flexDirection: "column",
-          gap: 10,
-        }}
-      >
-        <FieldInput
-          fieldLabel="Descripción"
-          name="descripcion"
-          placeholder="Descripción"
-          value={form.descripcion}
-          onChange={handleChange}
-        />
-
-        <div>
+        {/* FORMULARIO */}
+        <div
+          style={{
+            marginBottom: 20,
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+          }}
+        >
           <FieldInput
-            fieldLabel="Código numérico"
-            name="codigo"
-            type="number"
-            placeholder="Código numérico"
-            value={form.codigo}
+            fieldLabel="Descripción"
+            name="descripcion"
+            placeholder="Descripción"
+            value={form.descripcion}
             onChange={handleChange}
           />
 
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={handlePhoto}
+          <div>
+            <FieldInput
+              fieldLabel="Código numérico"
+              name="codigo"
+              type="number"
+              placeholder="Código numérico"
+              value={form.codigo}
+              onChange={async (e) => {
+                if (isNaN(e.target.value)) return;
+                if (e.target.value.length < 12 || e.target.value.length > 13)
+                  return handleChange(e);
+
+                const { barcodeCleaned, base64Barcode } = await generateBarcode(
+                  e.target.value,
+                );
+
+                setForm({
+                  ...form,
+                  codigo: barcodeCleaned,
+                  barcodeImg: base64Barcode,
+                });
+              }}
+            />
+
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handlePhoto}
+            />
+          </div>
+
+          <FieldInput
+            fieldLabel="Hecho por"
+            name="hechoPor"
+            placeholder="Hecho por"
+            value={madeBy}
+            onChange={(e) => {
+              handleChange(e);
+              setMadeBy(e.target.value);
+            }}
           />
+
+          <FieldInput
+            fieldLabel="Supervisó"
+            name="superviso"
+            placeholder="Supervisó"
+            value={supervisedBy}
+            onChange={(e) => {
+              handleChange(e);
+              setSupervisedBy(e.target.value);
+            }}
+          />
+
+          <FieldInput
+            fieldLabel="Piezas"
+            name="piezas"
+            type="number"
+            placeholder="Piezas"
+            value={form.piezas}
+            onChange={handleChange}
+          />
+
+          <Button onClick={agregarItem}>Agregar</Button>
         </div>
 
-        <FieldInput
-          fieldLabel="Hecho por"
-          name="hechoPor"
-          placeholder="Hecho por"
-          value={madeBy}
-          onChange={(e) => {
-            handleChange(e);
-            setMadeBy(e.target.value);
-          }}
-        />
+        {/* LISTA */}
+        <h3>Lista - Marbetes: {productList.length}</h3>
+        {productList.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <button onClick={deleteList}>Borrar lista</button>{" "}
+            <button onClick={async () => generarPDF(productList)}>
+              Imprimir
+            </button>
+          </div>
+        )}
 
-        <FieldInput
-          fieldLabel="Supervisó"
-          name="superviso"
-          placeholder="Supervisó"
-          value={supervisedBy}
-          onChange={(e) => {
-            handleChange(e);
-            setSupervisedBy(e.target.value);
-          }}
-        />
+        {productList.length === 0 && <p>No hay registros</p>}
 
-        <FieldInput
-          fieldLabel="Piezas"
-          name="piezas"
-          type="number"
-          placeholder="Piezas"
-          value={form.piezas}
-          onChange={handleChange}
-        />
+        {productList.map((item) => (
+          <div
+            key={item.id}
+            style={{ border: "1px solid #ccc", padding: 10, marginBottom: 10 }}
+          >
+            <p>
+              <b>Descripción:</b> {item.descripcion}
+            </p>
+            <p>
+              <b>Código:</b> {item.codigo}
+            </p>
+            <p>
+              <b>Hecho por:</b> {item.hechoPor}
+            </p>
+            <p>
+              <b>Supervisó:</b> {item.superviso}
+            </p>
+            <p>
+              <b>Piezas:</b> {item.piezas}
+            </p>
 
-        <Button onClick={agregarItem}>Agregar</Button>
+            <button onClick={() => removeProduct(item.id)}>Eliminar</button>
+          </div>
+        ))}
+
+        {/* ACCIONES */}
       </div>
-
-      {/* LISTA */}
-      <h3>Lista - Marbetes: {productList.length}</h3>
-      {productList.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <button onClick={deleteList}>Borrar lista</button>{" "}
-          <button onClick={async () => generarPDF(productList)}>
-            Imprimir
-          </button>
-        </div>
-      )}
-
-      {productList.length === 0 && <p>No hay registros</p>}
-
-      {productList.map((item) => (
-        <div
-          key={item.id}
-          style={{ border: "1px solid #ccc", padding: 10, marginBottom: 10 }}
-        >
-          <p>
-            <b>Descripción:</b> {item.descripcion}
-          </p>
-          <p>
-            <b>Código:</b> {item.codigo}
-          </p>
-          <p>
-            <b>Hecho por:</b> {item.hechoPor}
-          </p>
-          <p>
-            <b>Supervisó:</b> {item.superviso}
-          </p>
-          <p>
-            <b>Piezas:</b> {item.piezas}
-          </p>
-
-          <button onClick={() => removeProduct(item.id)}>Eliminar</button>
-        </div>
-      ))}
-
-      {/* ACCIONES */}
     </div>
   );
 }
